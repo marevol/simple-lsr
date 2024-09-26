@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 
 
-def evaluate(model, dataloader, device="cpu"):
+def calculate_loss_and_accuracy(model, dataloader, device="cpu"):
     model.eval()
     total_loss = 0
     total_correct = 0
@@ -12,19 +12,21 @@ def evaluate(model, dataloader, device="cpu"):
 
     with torch.no_grad():
         for batch in dataloader:
-            query_vectors = batch["query_vector"].to(device)  # [batch_size, vector_dim]
+            query_vectors = batch["query_vector"]  # List of tensors
             positive_vectors_list = batch["positive_vectors"]  # List of tensors
             negative_vectors_list = batch["negative_vectors"]  # List of tensors
 
-            batch_size = query_vectors.size(0)
+            batch_size = len(query_vectors)
 
             for i in range(batch_size):
-                query_vector = query_vectors[i].unsqueeze(0)  # [1, vector_dim]
+                query_vector = query_vectors[i].to(device).unsqueeze(0)  # [1, vector_dim]
                 positive_vectors = positive_vectors_list[i].to(device)  # [num_pos, vector_dim]
                 negative_vectors = negative_vectors_list[i].to(device)  # [num_neg, vector_dim]
 
-                transformed_query_vector = model(query_vector)  # [1, hidden_dim]
+                if positive_vectors.size(0) == 0 or negative_vectors.size(0) == 0:
+                    continue  # Skip if no positive or negative samples
 
+                transformed_query_vector = model(query_vector)  # [1, hidden_dim]
                 transformed_positive_vectors = model(positive_vectors)  # [num_pos, hidden_dim]
                 transformed_negative_vectors = model(negative_vectors)  # [num_neg, hidden_dim]
 

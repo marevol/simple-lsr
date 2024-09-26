@@ -2,7 +2,6 @@ import pickle
 import re
 import unicodedata
 
-import numpy as np
 import torch
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -45,7 +44,7 @@ class BasicTokenizer:
 
 
 class QueryVectorizer:
-    def __init__(self, max_features=50000, min_df=1, max_df=1.0):
+    def __init__(self, max_features, min_df=1, max_df=1.0):
         """
         Initialize the QueryVectorizer.
 
